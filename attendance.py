@@ -6,7 +6,7 @@ import database as db
 from exceptions import (DuplicateTimeInError, DuplicateTimeOutError, InvalidQRCodeError,
                         UnauthorizedAccessError, ValidationError)
 from models import BADGE_REGISTRY, DT_FMT, QR_PREFIX, Attendance, Event
-#dasdadasd
+
 logger = logging.getLogger("campusbadge")
 
 
