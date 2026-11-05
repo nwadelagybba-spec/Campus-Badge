@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Event QR code{% endblock %}
+{% block content %}
+<h1>QR code: {{ event.title }}</h1>
+<div class="card center qr-card">
+  <div class="qr">{{ svg }}</div>
+  <p><strong>{{ event.title }}</strong><br>{{ event.start_time|fmt_dt }} · {{ event.location }}</p>
+  <p class="small muted">Valid from 1 hour before the event starts until 1 hour after it ends.<br>
+    Students scan it for both Time In and Time Out.</p>
+  <details><summary class="small">Show code text (for testing / manual entry)</summary><code class="payload">{{ payload }}</code></details>
+  <div class="actions center-actions no-print">
+    <button type="button" class="btn btn-primary" data-print>Print</button>
+    <form method="post" data-confirm="Generate a new QR code? The old one will stop working immediately.">{{ csrf() }}<button class="btn btn-light">Regenerate QR code</button></form>
+    <a class="btn btn-light" href="{{ url_for('events') }}">Back</a>
+  </div>
+</div>
+{% endblock %}

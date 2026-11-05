@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, badge_card %}
+{% block title %}My Badges{% endblock %}
+{% block content %}
+<h1>My achievement badges</h1>
+<p class="muted">Some badges are awarded automatically after you complete attendance. Others need a faculty member’s approval.</p>
+<div class="grid badges">
+  {% for b in badges %}
+    {% call badge_card(b) %}
+      {% if b.kind == 'approval' and b.status in ('locked', 'rejected') %}
+        <form method="post" action="{{ url_for('badge_request') }}" class="stack request-form" data-validate novalidate>
+          {{ csrf() }}<input type="hidden" name="badge_key" value="{{ b.key }}">
+          <input name="note" required minlength="5" maxlength="300" placeholder="Describe what you did…">
+          <button class="btn btn-sm btn-primary">{{ 'Request again' if b.status == 'rejected' else 'Request badge' }}</button>
+        </form>
+      {% endif %}
+    {% endcall %}
+  {% endfor %}
+</div>
+{% endblock %}

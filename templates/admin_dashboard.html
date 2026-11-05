@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% from "_macros.html" import stat, csrf %}
+{% block title %}Administrator Dashboard{% endblock %}
+{% block content %}
+<h1>Administrator Dashboard</h1>
+<div class="grid stats">
+  {{ stat("Total Students", total_students, url_for('accounts', role='student')) }}
+  {{ stat("Total Faculty", total_faculty, url_for('accounts', role='faculty')) }}
+  {{ stat("Total Events", total_events, url_for('events')) }}
+  {{ stat("Total Attendance Records", total_attendance, url_for('attendance')) }}
+</div>
+{% if pending_accounts %}
+<div class="alert alert-warning"><strong>{{ pending_accounts }}</strong> account request(s) waiting.
+  <a href="{{ url_for('accounts', status='pending') }}">Review now</a></div>
+{% endif %}
+<div class="grid two">
+  <section class="card">
+    <div class="row-between"><h2>Attendance monitoring</h2><a href="{{ url_for('attendance') }}">View all</a></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Student</th><th>Event</th><th>Time in</th><th>Time out</th></tr></thead>
+      <tbody>
+      {% for r in recent %}<tr><td>{{ r.student_name }}</td><td>{{ r.event_title }}</td><td>{{ r.time_in|fmt_dt }}</td><td>{{ r.time_out|fmt_dt }}</td></tr>
+      {% else %}<tr><td colspan="4" class="muted">No attendance yet.</td></tr>{% endfor %}
+      </tbody></table></div>
+  </section>
+  <section class="card">
+    <div class="row-between"><h2>System activity</h2><a href="{{ url_for('reports') }}">Reports &amp; backups</a></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>When</th><th>User</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for a in activity %}<tr><td>{{ a.created_at|fmt_dt }}</td><td>{{ a.full_name or '—' }}</td><td>{{ a.action }}</td></tr>
+      {% else %}<tr><td colspan="3" class="muted">No activity yet.</td></tr>{% endfor %}
+      </tbody></table></div>
+  </section>
+</div>
+<section class="card">
+  <h2>Logo / badge image</h2>
+  <div class="logo-manage">
+    <div class="logo-preview">{% if logo_url %}<img src="{{ logo_url }}" alt="Current logo">{% else %}<span class="logo">CB</span>{% endif %}</div>
+    <div>
+      <form method="post" action="{{ url_for('upload_logo') }}" enctype="multipart/form-data" class="actions">
+        {{ csrf() }}
+        <input type="file" name="logo" accept="image/png,image/jpeg,image/gif,image/webp" required>
+        <button class="btn btn-primary">Upload logo</button>
+      </form>
+      <p class="small muted">PNG, JPG, GIF or WEBP, up to 1 MB. A square image works best. Shown in the sidebar and on the login page.</p>
+      {% if logo_url %}
+      <form method="post" action="{{ url_for('upload_logo') }}">{{ csrf() }}<input type="hidden" name="action" value="remove">
+        <button class="btn btn-light btn-sm">Remove logo</button></form>
+      {% endif %}
+    </div>
+  </div>
+</section>
+<section class="card">
+  <h2>Quick links</h2>
+  <div class="actions">
+    <a class="btn btn-primary" href="{{ url_for('accounts') }}">Account management</a>
+    <a class="btn btn-primary" href="{{ url_for('events') }}">Event management</a>
+    <a class="btn btn-primary" href="{{ url_for('attendance') }}">Attendance monitoring</a>
+    <a class="btn btn-primary" href="{{ url_for('reports') }}">Reports</a>
+  </div>
+</section>
+{% endblock %}

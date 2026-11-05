@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<div class="auth-card card">
+  {% if logo_url %}<img class="auth-logo" src="{{ logo_url }}" alt="CampusBadge logo">{% endif %}
+  <h1>Create an account</h1>
+  <form method="post" data-validate novalidate>
+    {{ csrf() }}
+    <label>Full name * <input name="full_name" required maxlength="100" value="{{ values.get('full_name','') }}"></label>
+    <label>Email * <input type="email" name="email" required value="{{ values.get('email','') }}"></label>
+    <label>ID number <input name="id_number" maxlength="30" value="{{ values.get('id_number','') }}"></label>
+    <label>Program / department <input name="program" maxlength="100" value="{{ values.get('program','') }}"></label>
+    <label>Account type *
+      <select name="role">
+        <option value="student" {{ 'selected' if values.get('role') != 'faculty' }}>Student</option>
+        <option value="faculty" {{ 'selected' if values.get('role') == 'faculty' }}>Faculty (needs administrator approval)</option>
+      </select>
+    </label>
+    <label>Password * <input type="password" name="password" required minlength="8" autocomplete="new-password">
+      <small class="muted">At least 8 characters, with a letter and a number.</small></label>
+    <label>Confirm password * <input type="password" name="confirm_password" required autocomplete="new-password"></label>
+    <button class="btn btn-primary btn-block">Register</button>
+  </form>
+  <p class="center">Already registered? <a href="{{ url_for('login') }}">Log in</a></p>
+</div>
+{% endblock %}

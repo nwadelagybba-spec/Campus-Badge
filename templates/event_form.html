@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ 'Edit' if editing else 'New' }} event{% endblock %}
+{% block content %}
+<h1>{{ 'Edit event' if editing else 'Create event' }}</h1>
+<div class="card form-card">
+  <form method="post" data-validate novalidate>
+    {{ csrf() }}
+    <label>Title * <input name="title" required maxlength="120" value="{{ values['title'] if values and values['title'] is defined else '' }}"></label>
+    <label>Description <textarea name="description" rows="3" maxlength="1000">{{ values['description'] if values and values['description'] is defined else '' }}</textarea></label>
+    <label>Category *
+      <select name="category">
+        {% for c in categories %}<option {{ 'selected' if values and values['category'] is defined and values['category'] == c }}>{{ c }}</option>{% endfor %}
+      </select></label>
+    <label>Location * <input name="location" required maxlength="120" value="{{ values['location'] if values and values['location'] is defined else '' }}"></label>
+    <div class="grid two">
+      <label>Starts * <input type="datetime-local" name="start_time" required value="{{ (values['start_time'] if values and values['start_time'] is defined else '')|dt_input }}"></label>
+      <label>Ends * <input type="datetime-local" name="end_time" required value="{{ (values['end_time'] if values and values['end_time'] is defined else '')|dt_input }}"></label>
+    </div>
+    <label>Capacity * <input type="number" name="capacity" min="1" max="5000" required value="{{ values['capacity'] if values and values['capacity'] is defined else 100 }}"></label>
+    <div class="actions"><button class="btn btn-primary">{{ 'Save changes' if editing else 'Create event' }}</button>
+      <a class="btn btn-light" href="{{ url_for('events') }}">Cancel</a></div>
+  </form>
+</div>
+{% endblock %}

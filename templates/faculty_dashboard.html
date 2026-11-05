@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_macros.html" import stat %}
+{% block title %}Faculty Dashboard{% endblock %}
+{% block content %}
+<h1>Faculty Dashboard</h1>
+<div class="grid stats">
+  {{ stat("Events Managed", events_managed, url_for('events')) }}
+  {{ stat("Students Attending", students_attending) }}
+  {{ stat("Pending Achievement Approvals", pending_approvals, url_for('achievements')) }}
+  <div class="card stat quick"><a class="btn btn-accent" href="{{ url_for('reports') }}">Attendance Reports</a>
+    <div class="stat-label">Export CSV files</div></div>
+</div>
+<div class="grid two">
+  <section class="card">
+    <div class="row-between"><h2>My events</h2><a class="btn btn-sm btn-primary" href="{{ url_for('event_new') }}">+ New event</a></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Event</th><th>When</th><th></th></tr></thead>
+      <tbody>
+      {% for e in my_events %}<tr><td>{{ e.title }}</td><td>{{ e.start_time|fmt_dt }}</td>
+        <td class="actions"><a class="btn btn-sm btn-light" href="{{ url_for('event_qr', event_id=e.id) }}">QR</a>
+          <a class="btn btn-sm btn-light" href="{{ url_for('attendance', event_id=e.id) }}">Attendance</a></td></tr>
+      {% else %}<tr><td colspan="3" class="muted">You have not created any events yet.</td></tr>{% endfor %}
+      </tbody></table></div>
+  </section>
+  <section class="card">
+    <h2>Recent attendance records</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Student</th><th>Event</th><th>Time in</th><th>Time out</th></tr></thead>
+      <tbody>
+      {% for r in recent %}<tr><td>{{ r.student_name }}</td><td>{{ r.event_title }}</td><td>{{ r.time_in|fmt_dt }}</td><td>{{ r.time_out|fmt_dt }}</td></tr>
+      {% else %}<tr><td colspan="4" class="muted">No attendance recorded for your events yet.</td></tr>{% endfor %}
+      </tbody></table></div>
+  </section>
+</div>
+{% endblock %}

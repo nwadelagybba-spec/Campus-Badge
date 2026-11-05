@@ -1,0 +1,56 @@
+{% from "_macros.html" import csrf %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}CampusBadge{% endblock %} · CampusBadge</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+{% if user %}
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">{% if logo_url %}<img class="logo-img" src="{{ logo_url }}" alt="CampusBadge logo">{% else %}<span class="logo">CB</span>{% endif %} CampusBadge</div>
+    {% set ep = request.endpoint %}
+    <nav>
+      <a href="{{ url_for('dashboard') }}" class="{{ 'active' if ep and ep.endswith('_dashboard') }}">Dashboard</a>
+      {% if user.role == 'admin' %}<a href="{{ url_for('accounts') }}" class="{{ 'active' if ep == 'accounts' }}">Accounts</a>{% endif %}
+      <a href="{{ url_for('events') }}" class="{{ 'active' if ep and ep.startswith('event') }}">Events</a>
+      {% if user.role == 'student' %}
+        <a href="{{ url_for('attendance') }}" class="{{ 'active' if ep == 'attendance' }}">QR Attendance</a>
+        <a href="{{ url_for('badges') }}" class="{{ 'active' if ep == 'badges' }}">My Badges</a>
+      {% else %}
+        <a href="{{ url_for('attendance') }}" class="{{ 'active' if ep == 'attendance' }}">Attendance Records</a>
+        <a href="{{ url_for('achievements') }}" class="{{ 'active' if ep == 'achievements' }}">Achievements</a>
+        <a href="{{ url_for('reports') }}" class="{{ 'active' if ep == 'reports' }}">Reports</a>
+      {% endif %}
+      <a href="{{ url_for('profile') }}" class="{{ 'active' if ep == 'profile' }}">My Profile</a>
+    </nav>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <button type="button" id="menu-toggle" class="btn btn-light btn-sm menu-btn" aria-label="Toggle menu">Menu</button>
+      <span class="tagline">Discover. Participate. Achieve. Grow.</span>
+      <div class="topbar-user">
+        <span>{{ user.full_name }}</span> <span class="role-pill">{{ user.role }}</span>
+        <form method="post" action="{{ url_for('logout') }}">{{ csrf() }}<button class="btn btn-light btn-sm">Log out</button></form>
+      </div>
+    </header>
+    <main class="content">
+{% else %}
+<main class="auth-wrap">
+{% endif %}
+      {% include "_flash.html" %}
+      {% block content %}{% endblock %}
+{% if user %}
+    </main>
+  </div>
+</div>
+{% else %}
+</main>
+{% endif %}
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

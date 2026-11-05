@@ -1,0 +1,25 @@
+{% macro stat(label, value, href=None) %}
+<div class="card stat">
+  <div class="stat-value">{{ value }}</div>
+  <div class="stat-label">{% if href %}<a href="{{ href }}">{{ label }}</a>{% else %}{{ label }}{% endif %}</div>
+</div>
+{% endmacro %}
+
+{% macro csrf() %}<input type="hidden" name="_csrf" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro status_pill(status) %}<span class="pill pill-{{ status }}">{{ status|capitalize }}</span>{% endmacro %}
+
+{% macro badge_card(b, show_request=False) %}
+<div class="badge-card {{ 'is-earned' if b.status == 'earned' else '' }}">
+  <div class="badge-icon">{{ b.icon }}</div>
+  <div class="badge-body">
+    <strong>{{ b.name }}</strong>
+    {{ status_pill(b.status) }}
+    <p class="muted">{{ b.description }}</p>
+    <p class="small">{{ b.requirement }}</p>
+    <div class="progress" aria-label="Progress"><span style="width: {{ b.percent }}%"></span></div>
+    <span class="small muted">{{ b.current }} / {{ b.target }}</span>
+    {{ caller() if caller else '' }}
+  </div>
+</div>
+{% endmacro %}

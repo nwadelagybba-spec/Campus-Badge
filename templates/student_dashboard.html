@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_macros.html" import stat, csrf, badge_card %}
+{% block title %}Student Dashboard{% endblock %}
+{% block content %}
+<h1>Welcome, {{ user.full_name.split()[0] }}</h1>
+<div class="grid stats">
+  {{ stat("Events Joined", events_joined) }}
+  {{ stat("Attendance Records", attendance_total) }}
+  {{ stat("Badges Earned", badges_earned, url_for('badges')) }}
+  <div class="card stat quick"><a class="btn btn-accent" href="{{ url_for('attendance') }}">Open QR Attendance</a>
+    <div class="stat-label">Quick access</div></div>
+</div>
+
+<div class="grid two">
+  <section class="card">
+    <h2>Upcoming events</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Event</th><th>When</th><th></th></tr></thead>
+      <tbody>
+      {% for e in upcoming %}
+        <tr><td>{{ e.title }}<br><small class="muted">{{ e.location }}</small></td><td>{{ e.start_time|fmt_dt }}</td>
+          <td>{% if e.id in registered %}<span class="pill pill-earned">Registered</span>
+              {% else %}<form method="post" action="{{ url_for('event_register', event_id=e.id) }}">{{ csrf() }}<button class="btn btn-sm btn-primary">Register</button></form>{% endif %}</td></tr>
+      {% else %}<tr><td colspan="3" class="muted">No upcoming events yet.</td></tr>{% endfor %}
+      </tbody></table></div>
+  </section>
+  <section class="card">
+    <h2>Recent attendance</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Event</th><th>Time in</th><th>Time out</th></tr></thead>
+      <tbody>
+      {% for r in recent %}<tr><td>{{ r.event_title }}</td><td>{{ r.time_in|fmt_dt }}</td><td>{{ r.time_out|fmt_dt }}</td></tr>
+      {% else %}<tr><td colspan="3" class="muted">No attendance yet. Scan an event QR code to start!</td></tr>{% endfor %}
+      </tbody></table></div>
+  </section>
+</div>
+
+<section class="card">
+  <h2>My achievement badges</h2>
+  <div class="grid badges">
+    {% for b in badges %}{{ badge_card(b) }}{% endfor %}
+  </div>
+</section>
+{% endblock %}

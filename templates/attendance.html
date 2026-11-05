@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Attendance{% endblock %}
+{% block content %}
+{% if user.role == 'student' %}
+<h1>QR Attendance</h1>
+<div class="grid two">
+  <section class="card">
+    <h2>Scan an event QR code</h2>
+    <div class="mode-toggle" role="radiogroup" aria-label="Attendance action">
+      <label><input type="radio" name="mode" value="in" checked form="scan-form"> Time In</label>
+      <label><input type="radio" name="mode" value="out" form="scan-form"> Time Out</label>
+    </div>
+    <div id="reader" class="reader"></div>
+    <button type="button" id="scanner-start" class="btn btn-primary">Start camera</button>
+    <p id="camera-note" class="small muted">The camera needs permission, and works on https:// or localhost. No camera? Use the options below.</p>
+
+    <form id="scan-form" method="post" action="{{ url_for('attendance_scan') }}" class="stack">
+      {{ csrf() }}
+      <input type="hidden" name="action" id="scan-action" value="in">
+      <label>Paste the QR code text <input name="qr_code" id="qr_code" placeholder="CAMPUSBADGE:1:…" autocomplete="off"></label>
+      <button class="btn btn-accent" id="scan-submit">Record attendance</button>
+    </form>
+    <div id="scan-result" class="alert hidden" role="status"></div>
+
+    {% if testing_mode %}
+    <form id="sim-form" method="post" action="{{ url_for('attendance_scan') }}" class="test-box stack">
+      {{ csrf() }}
+      <input type="hidden" name="action" id="sim-action" value="in">
+      <strong>TESTING MODE — simulated scan</strong>
+      <small class="muted">For demos without a camera. The server still checks registration, time window and duplicates. Turn off by setting CAMPUSBADGE_TESTING_MODE=0.</small>
+      <select name="simulate_event_id" required>
+        <option value="">Choose a registered event…</option>
+        {% for e in registered %}<option value="{{ e.id }}">{{ e.title }}</option>{% endfor %}
+      </select>
+      <button class="btn btn-light">Simulate scan</button>
+    </form>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <div class="row-between"><h2>My attendance history</h2>
+      <a class="btn btn-sm btn-light" href="{{ url_for('export_report', kind='my_history') }}">Export CSV</a></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Event</th><th>Time in</th><th>Time out</th><th>Duration</th></tr></thead>
+      <tbody>
+      {% for r in history %}<tr><td>{{ r.event_title }}</td><td>{{ r.time_in|fmt_dt }}</td><td>{{ r.time_out|fmt_dt }}</td><td>{{ r.time_in|duration(r.time_out) }}</td></tr>
+      {% else %}<tr><td colspan="4" class="muted">No attendance recorded yet.</td></tr>{% endfor %}
+      </tbody></table></div>
+  </section>
+</div>
+{% else %}
+<div class="row-between"><h1>Attendance records</h1>
+  <a class="btn btn-light" href="{{ url_for('export_report', kind='attendance') }}">Export CSV</a></div>
+<div class="card">
+  <form method="get" class="inline-form">
+    <label>Event
+      <select name="event_id" onchange="this.form.submit()">
+        <option value="">All events</option>
+        {% for e in choices %}<option value="{{ e.id }}" {{ 'selected' if selected == e.id }}>{{ e.title }}</option>{% endfor %}
+      </select></label>
+    <noscript><button class="btn btn-sm btn-primary">Filter</button></noscript>
+  </form>
+  <input type="search" class="filter" placeholder="Search students…" data-filter="records-table">
+  <div class="table-wrap"><table id="records-table">
+    <thead><tr><th>Student</th><th>ID number</th><th>Event</th><th>Time in</th><th>Time out</th><th>Duration</th></tr></thead>
+    <tbody>
+    {% for r in records %}<tr><td>{{ r.student_name }}</td><td>{{ r.id_number or '—' }}</td><td>{{ r.event_title }}</td>
+      <td>{{ r.time_in|fmt_dt }}</td><td>{{ r.time_out|fmt_dt }}</td><td>{{ r.time_in|duration(r.time_out) }}</td></tr>
+    {% else %}<tr><td colspan="6" class="muted">No attendance records found.</td></tr>{% endfor %}
+    </tbody></table></div>
+  <p class="small muted">Attendance records are read-only here to keep them trustworthy.</p>
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{% if user.role == 'student' %}<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>{% endif %}
+{% endblock %}

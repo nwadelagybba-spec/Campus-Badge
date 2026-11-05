@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<h1>Reports</h1>
+<section class="card">
+  <h2>Export CSV reports</h2>
+  <div class="actions">
+    <a class="btn btn-primary" href="{{ url_for('export_report', kind='attendance') }}">Attendance</a>
+    <a class="btn btn-primary" href="{{ url_for('export_report', kind='events') }}">Events</a>
+    <a class="btn btn-primary" href="{{ url_for('export_report', kind='achievements') }}">Badge achievements</a>
+    {% if user.role == 'admin' %}<a class="btn btn-primary" href="{{ url_for('export_report', kind='activity') }}">Activity log</a>{% endif %}
+  </div>
+</section>
+<section class="card">
+  <h2>Attendance summary by event</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Event</th><th>Date</th><th>Registered</th><th>Timed in</th><th>Completed</th><th>Attendance rate</th></tr></thead>
+    <tbody>
+    {% for s in summary %}<tr><td>{{ s.title }}</td><td>{{ s.start_time|fmt_dt }}</td><td>{{ s.registered }}</td><td>{{ s.timed_in }}</td><td>{{ s.completed }}</td>
+      <td>{{ ((100 * s.completed / s.registered)|round|int ~ '%') if s.registered else '—' }}</td></tr>
+    {% else %}<tr><td colspan="6" class="muted">No events yet.</td></tr>{% endfor %}
+    </tbody></table></div>
+</section>
+{% if user.role == 'admin' %}
+<div class="grid two">
+  <section class="card">
+    <h2>Backup &amp; files</h2>
+    <form method="post" action="{{ url_for('backup') }}">{{ csrf() }}<button class="btn btn-accent">Create database backup</button></form>
+    <h3>Backups</h3>
+    <ul class="filelist">{% for f in backups %}<li><a href="{{ url_for('download_file', folder='backups', name=f.name) }}">{{ f.name }}</a> <span class="muted small">{{ f.size_kb }} KB · {{ f.modified }}</span></li>{% else %}<li class="muted">No backups yet.</li>{% endfor %}</ul>
+    <h3>Recent exports</h3>
+    <ul class="filelist">{% for f in exports %}<li><a href="{{ url_for('download_file', folder='exports', name=f.name) }}">{{ f.name }}</a> <span class="muted small">{{ f.modified }}</span></li>{% else %}<li class="muted">No exports yet.</li>{% endfor %}</ul>
+  </section>
+  <section class="card">
+    <h2>System activity</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>When</th><th>User</th><th>Action</th><th>Details</th></tr></thead>
+      <tbody>{% for a in activity %}<tr><td>{{ a.created_at|fmt_dt }}</td><td>{{ a.full_name or '—' }}</td><td>{{ a.action }}</td><td>{{ a.details }}</td></tr>{% endfor %}</tbody></table></div>
+    <h3>Technical log (latest lines)</h3>
+    <pre class="log">{% for line in error_lines %}{{ line }}
+{% else %}No technical errors logged.{% endfor %}</pre>
+  </section>
+</div>
+{% endif %}
+{% endblock %}

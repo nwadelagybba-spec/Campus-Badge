@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, status_pill %}
+{% block title %}Achievements{% endblock %}
+{% block content %}
+<h1>Achievement approvals</h1>
+<section class="card">
+  <h2>Pending requests</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Student</th><th>Badge</th><th>Note</th><th>Requested</th><th></th></tr></thead>
+    <tbody>
+    {% for r in pending %}<tr><td>{{ r.student_name }}<br><small class="muted">{{ r.id_number }}</small></td><td>{{ r.badge_name }}</td>
+      <td>{{ r.note }}</td><td>{{ r.created_at|fmt_dt }}</td>
+      <td class="actions">
+        <form method="post" action="{{ url_for('achievement_review', item_id=r.id) }}">{{ csrf() }}<input type="hidden" name="decision" value="approve"><button class="btn btn-sm btn-primary">Approve</button></form>
+        <form method="post" action="{{ url_for('achievement_review', item_id=r.id) }}" data-confirm="Reject this request?">{{ csrf() }}<input type="hidden" name="decision" value="reject"><button class="btn btn-sm btn-danger">Reject</button></form>
+      </td></tr>
+    {% else %}<tr><td colspan="5" class="muted">Nothing waiting for review.</td></tr>{% endfor %}
+    </tbody></table></div>
+</section>
+<section class="card">
+  <h2>Recently reviewed</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Student</th><th>Badge</th><th>Status</th><th>Reviewed by</th></tr></thead>
+    <tbody>
+    {% for r in reviewed %}<tr><td>{{ r.student_name }}</td><td>{{ r.badge_name }}</td><td>{{ status_pill(r.status) }}</td><td>{{ r.reviewer_name or 'Automatic' }}</td></tr>
+    {% else %}<tr><td colspan="4" class="muted">No reviewed requests yet.</td></tr>{% endfor %}
+    </tbody></table></div>
+</section>
+{% endblock %}
